@@ -4,6 +4,9 @@
 #include <list>
 
 
+/**
+ * Produces a list of Tokens from an input stream with an assumed tab width.
+ */
 class Scanner {
 public:
 

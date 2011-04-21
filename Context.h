@@ -11,6 +11,9 @@
 #include <set>
 
 
+/**
+ * The current execution context and symbol table of an Interpreter.
+ */
 class Context {
 public:
 

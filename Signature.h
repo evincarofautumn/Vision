@@ -9,6 +9,12 @@
 class Context;
 
 
+/**
+ * The signature of a template, expressing its name, the number of data and
+ * content sections it expects, the number of parameters each section
+ * expects, and the name of each parameter. Has the ability to inject
+ * definitions of its parameters into a Context given a set of values.
+ */
 class Signature {
 public:
 

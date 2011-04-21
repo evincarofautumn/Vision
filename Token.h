@@ -4,6 +4,9 @@
 #include <string>
 
 
+/**
+ * A token, with an abstract type, string representation, and file position.
+ */
 class Token {
 public:
 

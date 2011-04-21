@@ -24,6 +24,10 @@ Parser::Parser(const Scanner& scanner, bool indent_mode) : scanner(scanner),
 	indent_mode(indent_mode) {}
 
 
+/**
+ * Accept a Token of a certain type from the buffer. Tolerate other types, of
+ * course, but get a little sad and return a false Token.
+ */
 Token accept_token(const std::list<Token>& tokens,
 	std::list<Token>::const_iterator& current, Token::Type type) {
 
@@ -35,6 +39,9 @@ Token accept_token(const std::list<Token>& tokens,
 }
 
 
+/**
+ * Expect a Token of a certain type, and throw a fit if you don't get it.
+ */
 Token expect_token(const std::list<Token>& tokens,
 	std::list<Token>::const_iterator& current, Token::Type type) {
 
@@ -54,6 +61,9 @@ Token expect_token(const std::list<Token>& tokens,
 }
 
 
+/**
+ * Accept an Expression of whatever sort from the buffer.
+ */
 std::shared_ptr<const Expression> accept_expression
 	(const std::list<Token>& tokens,
 	std::list<Token>::const_iterator& current) {
@@ -157,6 +167,7 @@ std::shared_ptr<const Expression> accept_expression
 		accept_token(tokens, current, Token::SEMICOLON))
 		return result;
 
+	// Magically transform a plain Expression into a Compound one.
 	if (current->type == Token::LEFT_BRACKET ||
 		current->type == Token::LEFT_PARENTHESIS ||
 		current->type == Token::LEFT_BRACE) {
@@ -229,6 +240,9 @@ std::shared_ptr<const Expression> accept_expression
 }
 
 
+/**
+ * Same vein: expect an Expression and cry if your expectations aren't met.
+ */
 std::shared_ptr<const Expression> expect_expression
 	(const std::list<Token>& tokens,
 	std::list<Token>::const_iterator& current) {
@@ -252,6 +266,10 @@ std::shared_ptr<const Expression> expect_expression
 }
 
 
+/**
+ * Expect that the buffer contains balanced delimiters, at the very least. As
+ * a courtesy, complain loudly and specifically about any problems with that.
+ */
 void expect_balanced(const std::list<Token>& tokens) {
 
 	std::list<std::list<Token>::const_iterator> delimiters;
@@ -331,6 +349,19 @@ void expect_balanced(const std::list<Token>& tokens) {
 }
 
 
+/**
+ * Do the parsing by getting Expressions till Expressions are no more to be
+ * had. If indent mode is on, replace indents and dedents with left braces and
+ * right braces, respectively. Obviously this has to be done after asserting
+ * that the delimiters are balanced, else code like this would be totally valid:
+ *
+ * def[foo]{bar}{baz}
+ *     bar baz
+ * foo
+ *     "bar"}{"baz"
+ *
+ * Which, as awesome as it is, it really shouldn't be.
+ */
 std::shared_ptr<const Expression> Parser::run() const {
 
 	std::list<Token> tokens = scanner.run();

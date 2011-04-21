@@ -13,9 +13,15 @@ Token::Token(Token::Type type, const std::string& string, int line,
 	int column) : type(type), string(string), line(line), column(column) {}
 
 
+/**
+ * Test the Token for truthiness according to whether its type is specified.
+ */
 Token::operator bool() const { return type; }
 
 
+/**
+ * Output the type of a Token as a pretty(ish) string.
+ */
 std::ostream& operator<<(std::ostream& stream, Token::Type type) {
 
 	switch (type) {

@@ -5,6 +5,9 @@
 #include <vector>
 
 
+/**
+ * A list of Values.
+ */
 class List : public Value {
 public:
 

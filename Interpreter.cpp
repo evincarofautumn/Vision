@@ -10,6 +10,10 @@ Interpreter::Interpreter(const Parser& parser, std::ostream& stream) :
 	parser(parser), stream(stream) {}
 
 
+/**
+ * Run the Parser, evaluate the resulting Expression, and send the result of
+ * flattening the resulting results to the stream. Of results.
+ */
 void Interpreter::run() {
 
 	std::shared_ptr<const Expression> expression = parser.run();

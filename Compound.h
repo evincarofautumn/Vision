@@ -6,6 +6,11 @@
 #include <vector>
 
 
+/**
+ * A compound Expression representing either a keyword application or template
+ * invocation. Encapsulates a determiner Expression, an optional string
+ * identifier, and multiple optional data and content sections.
+ */
 class Compound : public Expression {
 public:
 

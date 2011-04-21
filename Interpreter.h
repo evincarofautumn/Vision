@@ -7,6 +7,9 @@
 class Parser;
 
 
+/**
+ * Interprets an Expression and sends output to a stream.
+ */
 class Interpreter {
 public:
 

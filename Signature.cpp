@@ -11,6 +11,9 @@
 Signature::Signature(const std::string& name) : name(name), canonical(name) {}
 
 
+/**
+ * Initialize the Signature from another, re-constructing the canonical name.
+ */
 Signature::Signature(const std::string& name, const Signature& signature)
 	: name(name), data(signature.data), content(signature.content) {
 
@@ -34,6 +37,9 @@ Signature::Signature(const std::string& name, const Signature& signature)
 }
 
 
+/**
+ * Initialize the Signature and construct its canonical name.
+ */
 Signature::Signature(const std::string& name,
 	const std::vector<std::vector<std::string>>& data_names,
 	const std::vector<std::vector<std::string>>& content_names) : name(name) {
@@ -70,6 +76,9 @@ Signature::Signature(const std::string& name,
 }
 
 
+/**
+ * Inject definitions for each Signature parameter into a Context.
+ */
 void Signature::bind(Context& context,
 	const std::vector<std::vector<double>>& given_data,
 	const std::vector<std::vector<std::string>>& given_content) const {
@@ -138,6 +147,9 @@ void Signature::bind(Context& context,
 }
 
 
+/**
+ * Test whether a given set of values match a Signature.
+ */
 bool Signature::matches(const std::string& given_name,
 	const std::vector<std::vector<double>>& given_data,
 	const std::vector<std::vector<std::string>>& given_content) const {
@@ -164,6 +176,9 @@ bool Signature::matches(const std::string& given_name,
 }
 
 
+/**
+ * Compare Signatures for sorting in a map.
+ */
 bool operator<(const Signature& a, const Signature& b) {
 	return a.canonical < b.canonical;
 }

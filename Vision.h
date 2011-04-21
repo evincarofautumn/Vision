@@ -7,6 +7,11 @@
 class Context;
 
 
+/**
+ * The Vision runtime. Accepts command-line and CGI parameters, sets runtime
+ * options, and coordinates the activities of the Scanner, Parser, and
+ * Interpreter.
+ */
 class Vision {
 public:
 
@@ -28,7 +33,6 @@ private:
 
 	std::string filename;
 	OutputFormat output_format;
-	bool buffered_mode;
 	bool indent_mode;
 	bool pedantic_mode;
 	bool silent_mode;

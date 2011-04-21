@@ -7,6 +7,9 @@ class Expression;
 class Scanner;
 
 
+/**
+ * Parses a list of Tokens into a Block of Expressions.
+ */
 class Parser {
 public:
 

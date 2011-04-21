@@ -6,6 +6,9 @@
 class Context;
 
 
+/**
+ * A numeric Value.
+ */
 class Data : public Value {
 public:
 

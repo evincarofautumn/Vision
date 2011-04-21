@@ -13,12 +13,18 @@
 #include <stdexcept>
 
 
+/**
+ * Return the string value of an environment variable.
+ */
 std::string environment_string(const char* name) {
 	const char* result = std::getenv(name);
 	return result ? result : "";
 }
 
 
+/**
+ * Return the numeric value of an environment variable.
+ */
 int environment_number(const char* name) {
 	std::istringstream stream(environment_string(name));
 	int result;
@@ -27,9 +33,13 @@ int environment_number(const char* name) {
 }
 
 
+/**
+ * Initialise the runtime, setting default options, and producing a sane help
+ * message if parsing the command line or CGI environment fails.
+ */
 Vision::Vision(int argc, char** argv) try : output_format(TEXT),
-	buffered_mode(true), indent_mode(false), pedantic_mode(false),
-	silent_mode(false), head_mode(false), tab_size(4) {
+	indent_mode(false), pedantic_mode(false), silent_mode(false),
+	head_mode(false), tab_size(4) {
 
 	parse_options(argc, argv);
 	parse_environment();
@@ -45,6 +55,9 @@ Vision::Vision(int argc, char** argv) try : output_format(TEXT),
 }
 
 
+/**
+ * Perform basic parsing of command-line options; die if confused.
+ */
 void Vision::parse_options(int argc, char** argv) {
 
 	--argc;
@@ -53,16 +66,19 @@ void Vision::parse_options(int argc, char** argv) {
 
 	std::list<std::string>::iterator option;
 
+	// -h
 	if ((option = std::find(args.begin(), args.end(), "-h")) != args.end()) {
 		head_mode = true;
 		args.erase(option);
 	}
 
+	// -i
 	if ((option = std::find(args.begin(), args.end(), "-i")) != args.end()) {
 		indent_mode = true;
 		args.erase(option);
 	}
 
+	// -o FORMAT
 	if ((option = std::find(args.begin(), args.end(), "-o")) != args.end()) {
 		auto value = option;
 		++value;
@@ -83,17 +99,20 @@ void Vision::parse_options(int argc, char** argv) {
 		args.erase(value);
 	}
 
+	// -p
 	if ((option = std::find(args.begin(), args.end(), "-p")) != args.end()) {
 		pedantic_mode = true;
 		args.erase(option);
 	}
 
+	// -s
 	if ((option = std::find(args.begin(), args.end(), "-s")) != args.end()) {
 		silent_mode = true;
 		pedantic_mode = false;
 		args.erase(option);
 	}
 
+	// -t SIZE
 	if ((option = std::find(args.begin(), args.end(), "-t")) != args.end()) {
 		auto value = option;
 		++value;
@@ -109,19 +128,20 @@ void Vision::parse_options(int argc, char** argv) {
 		args.erase(value);
 	}
 
-	if ((option = std::find(args.begin(), args.end(), "-u")) != args.end()) {
-		buffered_mode = false;
-		args.erase(option);
-	}
-
 	if (args.size() != 1)
 		throw std::runtime_error("Expected filename or \"-\".");
 
+	// FILENAME | -
 	filename = args.front();
 
 }
 
 
+/**
+ * Parse CGI environment variables and CGI input over GET and POST. Handles
+ * requests only in the usual application/x-www-form-urlencoded format, and
+ * should probably handle multipart/form-data in the future.
+ */
 void Vision::parse_environment() {
 
 	const char* variables[] = {
@@ -174,6 +194,9 @@ void Vision::parse_environment() {
 }
 
 
+/**
+ * Get the hexadecimal value of a character.
+ */
 uint8_t hex_value(char c) {
 	if (c >= '0' && c <= '9') return c - '0';
 	if (c >= 'a' && c <= 'f') return c - 'a' + 0xa;
@@ -182,6 +205,9 @@ uint8_t hex_value(char c) {
 }
 
 
+/**
+ * Decode a URL-encoded string.
+ */
 std::string url_decode(const std::string& encoded) {
 
 	std::ostringstream result;
@@ -212,6 +238,9 @@ std::string url_decode(const std::string& encoded) {
 }
 
 
+/**
+ * Parse an application/x-www-form-urlencoded string into a map.
+ */
 void Vision::decode_variables(const std::string& raw) {
 
 	std::istringstream query(raw);
@@ -229,6 +258,9 @@ void Vision::decode_variables(const std::string& raw) {
 }
 
 
+/**
+ * Inject CGI and request variables into the Context of an Interpreter.
+ */
 void Vision::define_input(Context& context) const {
 
 	auto request_method = cgi.find("REQUEST_METHOD");
@@ -249,6 +281,10 @@ void Vision::define_input(Context& context) const {
 }
 
 
+/**
+ * Set the runtime going. If anything breaks, the generated error message is
+ * handily prefixed with the filename.
+ */
 void Vision::run() const try {
 
 	if (filename == "-") {

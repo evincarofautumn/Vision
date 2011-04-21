@@ -16,11 +16,17 @@ Group::Group(int line, int column,
 Group::~Group() {}
 
 
+/**
+ * Add an Expression to the Group.
+ */
 void Group::add(std::shared_ptr<const Expression> expression) {
 	value.push_back(expression);
 }
 
 
+/**
+ * Evaluate each Expression in the Group and return a List of results.
+ */
 std::shared_ptr<const List> Group::evaluate(Context& context) const {
 
 	std::ostringstream result;

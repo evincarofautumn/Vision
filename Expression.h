@@ -9,6 +9,9 @@ class List;
 class Value;
 
 
+/**
+ * An expression that can be evaluated to produce a Value.
+ */
 class Expression {
 public:
 

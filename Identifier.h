@@ -4,6 +4,9 @@
 #include <string>
 
 
+/**
+ * A bare identifier, exactly as read from a source file.
+ */
 class Identifier : public Value {
 public:
 

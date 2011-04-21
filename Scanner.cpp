@@ -9,6 +9,12 @@ Scanner::Scanner(std::istream& stream, int tab_size) : stream(stream),
 	tab_size(tab_size) {}
 
 
+/**
+ * Run the Scanner. This probably ought to be split up a bit, but it's very
+ * straightforward: continually get the next UTF-8 character from the stream,
+ * and jump around between states accordingly. Everything that can go wrong
+ * probably has an associated error message that's reasonably easy to read.
+ */
 std::list<Token> Scanner::run() const {
 
 	std::list<Token> result;
@@ -19,35 +25,35 @@ std::list<Token> Scanner::run() const {
 
 	try {
 
-		uint32_t current = 0;
-		uint32_t previous = 0;
-		int token_line = 0;
-		int token_column = 0;
-		int indent = 0;
-		bool need = true;
-		bool done = false;
-		bool in_indent = true;
-		std::vector<int> indents{0};
-		std::string string;
-		std::string heredoc_begin;
-		std::string heredoc_indent;
-		std::string heredoc_end;
+		uint32_t current = 0;           // Current (UTF-32) character.
+		uint32_t previous = 0;          // Previous character.
+		int token_line = 0;             // Line number of current token.
+		int token_column = 0;           // Column number of current token.
+		int indent = 0;                 // Current indent level.
+		bool need = true;               // Whether we need a new character.
+		bool done = false;              // Whether we're done scanning.
+		bool in_indent = true;          // Whether we're in the indent.
+		std::vector<int> indents{0};    // Indent level stack.
+		std::string string;             // String of current token.
+		std::string heredoc_begin;      // Heredoc begin identifier.
+		std::string heredoc_indent;     // Heredoc indent string.
+		std::string heredoc_end;        // Heredoc end identifier.
 
 		enum State {
 
-			NORMAL = 0,
-			IDENTIFIER,
-			DOUBLE,
-			SINGLE,
-			HEREDOC_BEGIN,
-			HEREDOC,
-			HEREDOC_INDENT,
-			HEREDOC_END,
-			INTEGER,
-			FRACTION,
-			COMMENT_BEGIN,
-			COMMENT,
-			COMMENT_BLOCK,
+			NORMAL = 0,        // Default state, without expectations.
+			IDENTIFIER,        // Within an identifier.
+			DOUBLE,            // Within a double-quoted string.
+			SINGLE,            // Within a single-quoted string.
+			HEREDOC_BEGIN,     // At the beginning of a heredoc.
+			HEREDOC,           // In the body of a heredoc.
+			HEREDOC_INDENT,    // Possibly in the final indent of a heredoc.
+			HEREDOC_END,       // At the end of a heredoc.
+			INTEGER,           // Within an integral constant.
+			FRACTION,          // Within a fractional constant.
+			COMMENT_BEGIN,     // At the beginning of a comment.
+			COMMENT,           // Within the body of a single-line comment.
+			COMMENT_BLOCK,     // Within the body of a comment block.
 
 		} state = NORMAL;
 
@@ -86,6 +92,8 @@ std::list<Token> Scanner::run() const {
 				token_line = file_line;
 				token_column = file_column;
 
+				// Here's where the indentation magic happens.
+
 				if (in_indent && !std::isspace(current)) {
 					in_indent = false;
 					if (indent > indents.back()) {
@@ -105,6 +113,8 @@ std::list<Token> Scanner::run() const {
 				}
 
 				switch (current) {
+
+				// A lot of boring and obvious stuff starts here.
 
 				case '[':
 					result.push_back(Token(Token::LEFT_BRACKET, token_line,
@@ -160,7 +170,7 @@ std::list<Token> Scanner::run() const {
 
 				default:
 					if (std::isspace(current)) {
-						/* Nop. */
+						// Space is like silence, the written lack of action.
 					} else if (std::isdigit(current)) {
 						string += current;
 						state = INTEGER;
@@ -196,6 +206,8 @@ std::list<Token> Scanner::run() const {
 				break;
 
 			case IDENTIFIER:
+
+				// Identifiers can't contain these, for obvious reasons.
 				if (std::string("'\"<[](){};#").find(current) !=
 					std::string::npos || std::isspace(current)) {
 					result.push_back(Token(Token::IDENTIFIER, string,
@@ -252,7 +264,7 @@ std::list<Token> Scanner::run() const {
 				} else if (current == '\n') {
 					state = HEREDOC;
 				} else if (current == '\r') {
-					// Nop.
+					// Just in case.
 				} else {
 					throw std::runtime_error("Invalid heredoc identifier.");
 				}
@@ -268,6 +280,7 @@ std::list<Token> Scanner::run() const {
 				break;
 
 			case HEREDOC_INDENT:
+				// It's not the end after all!
 				if (current == '\n') {
 					string += '\n';
 					string += heredoc_indent;
@@ -330,6 +343,8 @@ std::list<Token> Scanner::run() const {
 				break;
 
 			case FRACTION:
+				// I know, I didn't do anything interesting here.
+				// But do you really need scientific notation?
 				if (std::isdigit(current)) {
 					string += current;
 				} else {
@@ -376,6 +391,9 @@ std::list<Token> Scanner::run() const {
 
 	} catch (const std::runtime_error& exception) {
 
+		// Error messages have this thing where it's important that you know
+		// where the hell they're coming from. I made that happen here.
+
 		std::ostringstream message;
 		message << "At ";
 		if (tell != end)
@@ -387,6 +405,9 @@ std::list<Token> Scanner::run() const {
 
 	}
 
+	// When you have run as far as you can,
+	// you will find that all you can do
+	// is return.
 	return result;
 
 }

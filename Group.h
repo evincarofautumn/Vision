@@ -5,6 +5,9 @@
 #include <vector>
 
 
+/**
+ * A group of unevaluated Expressions.
+ */
 class Group : public Value {
 public:
 

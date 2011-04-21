@@ -3,6 +3,9 @@
 #include "Expression.h"
 
 
+/**
+ * A literal expression that requires no computation.
+ */
 class Value : public Expression, public std::enable_shared_from_this<Value> {
 public:
 

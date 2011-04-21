@@ -23,6 +23,9 @@ void Block::add(std::shared_ptr<const Expression> expression) {
 }
 
 
+/**
+ * Evaluate each Expression and yield a List of results.
+ */
 std::shared_ptr<const List> Block::evaluate(Context& context) const {
 	std::shared_ptr<List> result(new List(line_number, column_number));
 	for (auto i = value.begin(); i != value.end(); ++i)
@@ -31,12 +34,18 @@ std::shared_ptr<const List> Block::evaluate(Context& context) const {
 }
 
 
+/**
+ * Can't get there from here.
+ */
 std::string Block::get_content() const {
 	throw std::logic_error
 		("Attempt to get content from block without context.");
 }
 
 
+/**
+ * Seriously, can't get that from this.
+ */
 double Block::get_data() const {
 	throw std::logic_error
 		("Attempt to get data from block without context.");

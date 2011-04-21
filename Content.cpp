@@ -12,6 +12,9 @@ Content::Content(int line, int column, const std::string& value) :
 Content::~Content() {}
 
 
+/**
+ * A string Value as a List is just a List of just that Value.
+ */
 std::shared_ptr<const List> Content::evaluate(Context&) const {
 	std::shared_ptr<List> result(new List(line_number, column_number));
 	result->add(self_reference());
@@ -19,11 +22,15 @@ std::shared_ptr<const List> Content::evaluate(Context&) const {
 }
 
 
-std::string Content::get_content() const {
-	return value;
-}
+std::string Content::get_content() const { return value; }
 
 
+/**
+ * Strictly speaking, because of this it is possible to use number formats that
+ * Vision doesn't directly support, such as scientific notation, simply by
+ * quoting them and relying on runtime conversion. Of course, the conversion
+ * can fail, and it does so silently, making that not the best idea ever.
+ */
 double Content::get_data() const {
 	std::istringstream stream(value);
 	double result;

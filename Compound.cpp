@@ -13,6 +13,12 @@
 #include <stdexcept>
 
 
+/**
+ * Compound expressions are where all the fun happens; in order to make the
+ * implementation of said fun at all close to fun to maintain, each keyword
+ * (generally speaking) gets its own implementation function, which is
+ * associated with the builtin name via this map.
+ */
 decltype(Compound::evaluators) Compound::evaluators {
 
 	std::make_pair("def",       &Compound::evaluate_def),
@@ -47,6 +53,11 @@ decltype(Compound::evaluators) Compound::evaluators {
 };
 
 
+/**
+ * Most mathematical builtins take two operands, but that can vary, or possibly
+ * change in the future. As much as I am a fan of YAGNI, it is sometimes better
+ * to be safe than sorry.
+ */
 decltype(Compound::math_arities) Compound::math_arities {
 
 	std::make_pair("+",  2),
@@ -69,6 +80,8 @@ decltype(Compound::math_arities) Compound::math_arities {
 };
 
 
+// Forward declarations:
+
 Compound::MathFunction
 	math_add,
 	math_subtract,
@@ -84,8 +97,12 @@ Compound::MathFunction
 	math_not_equal,
 	math_greater,
 	math_not_greater;
+	// "I love you, Angeline. I've always loved you. Your husband be damned."
 
 
+/**
+ * Math builtins are mapped to their implementations here.
+ */
 decltype(Compound::math_functions) Compound::math_functions {
 	std::make_pair("+",  math_add),
 	std::make_pair("-",  math_subtract),
@@ -102,6 +119,9 @@ decltype(Compound::math_functions) Compound::math_functions {
 	std::make_pair(">",  math_greater),
 	std::make_pair("<=", math_not_greater),
 };
+
+
+// Obvious bits.
 
 
 Compound::Compound(int line, int column) : Expression(line, column) {}
@@ -147,6 +167,11 @@ bool Compound::is_keyword(const std::string& name) {
 }
 
 
+/**
+ * To evaluate a Compound Expression, just look up what sort of Expression it
+ * is, and bang, you're done. There are some crufty bits to account for
+ * parameter passing and errors, of course.
+ */
 std::shared_ptr<const List> Compound::evaluate(Context& context) const {
 
 	std::string id;
@@ -206,6 +231,9 @@ std::shared_ptr<const List> Compound::evaluate(Context& context) const {
 }
 
 
+/**
+ * Evaluate a "def" expression, defining a new template in the current Context.
+ */
 std::shared_ptr<const List> Compound::evaluate_def(const std::string& id,
 	Context& context) const {
 
@@ -262,6 +290,9 @@ std::shared_ptr<const List> Compound::evaluate_def(const std::string& id,
 }
 
 
+/**
+ * Die with a user-defined error message.
+ */
 std::shared_ptr<const List> Compound::evaluate_error
 	(const std::string& id, Context& context) const {
 
@@ -276,6 +307,9 @@ std::shared_ptr<const List> Compound::evaluate_error
 }
 
 
+/**
+ * Do some really filthy stuff with a strange program.
+ */
 std::shared_ptr<const List> Compound::evaluate_extern
 	(const std::string& id, Context& context) const {
 
@@ -297,6 +331,7 @@ std::shared_ptr<const List> Compound::evaluate_extern
 	// By the way, it's very important that you don't perform any evaluation
 	// while you're writing to the (admittedly awkward, but hey) temporary file.
 	// If you can't see why, consider "extern[x]{y extern[x]{z}}".
+	// Single-threaded applications for the win.
 	if (has_input) {
 
 		command += " < .vision.temp";
@@ -326,6 +361,9 @@ std::shared_ptr<const List> Compound::evaluate_extern
 }
 
 
+/**
+ * Expand the contents of a file as content.
+ */
 std::shared_ptr<const List> Compound::evaluate_file
 	(const std::string& id, Context& context) const {
 
@@ -352,6 +390,9 @@ std::shared_ptr<const List> Compound::evaluate_file
 }
 
 
+/**
+ * Send some content to the header buffer.
+ */
 std::shared_ptr<const List> Compound::evaluate_header
 	(const std::string& id, Context& context) const {
 
@@ -369,6 +410,9 @@ std::shared_ptr<const List> Compound::evaluate_header
 }
 
 
+/**
+ * Conditionally evaluate some Expressions.
+ */
 std::shared_ptr<const List> Compound::evaluate_if
 	(const std::string& id, Context& context) const {
 
@@ -386,6 +430,9 @@ std::shared_ptr<const List> Compound::evaluate_if
 }
 
 
+/**
+ * Evaluate in a new local scope.
+ */
 std::shared_ptr<const List> Compound::evaluate_local
 	(const std::string& id, Context& context) const {
 
@@ -401,6 +448,9 @@ std::shared_ptr<const List> Compound::evaluate_local
 }
 
 
+/**
+ * Evaluate a math expression.
+ */
 std::shared_ptr<const List> Compound::evaluate_math
 	(const std::string& id, Context& context) const {
 
@@ -428,6 +478,9 @@ std::shared_ptr<const List> Compound::evaluate_math
 	return std::static_pointer_cast<const List>(result);
 
 }
+
+
+// More obvious stuff.
 
 
 double math_add(const std::vector<double>& operands) {
@@ -504,6 +557,9 @@ double math_not_greater(const std::vector<double>& operands) {
 }
 
 
+/**
+ * Evaluate in a named local scope.
+ */
 std::shared_ptr<const List> Compound::evaluate_namespace
 	(const std::string& id, Context& context) const {
 
@@ -516,6 +572,9 @@ std::shared_ptr<const List> Compound::evaluate_namespace
 }
 
 
+/**
+ * Import a module. TODO: anything.
+ */
 std::shared_ptr<const List> Compound::evaluate_use
 	(const std::string& id, Context& context) const {
 
@@ -524,6 +583,9 @@ std::shared_ptr<const List> Compound::evaluate_use
 }
 
 
+/**
+ * Import a namespace prefix into the current scope.
+ */
 std::shared_ptr<const List> Compound::evaluate_using
 	(const std::string& id, Context& context) const {
 
@@ -533,6 +595,9 @@ std::shared_ptr<const List> Compound::evaluate_using
 }
 
 
+/**
+ * Complain with a user-defined warning message, or die if in pedantic mode.
+ */
 std::shared_ptr<const List> Compound::evaluate_warn
 	(const std::string& id, Context& context) const {
 
@@ -553,12 +618,18 @@ std::shared_ptr<const List> Compound::evaluate_warn
 }
 
 
+/**
+ * You really can't evaluate some things without a context.
+ */
 std::string Compound::get_content() const {
 	throw std::logic_error
 		("Attempt to get content from compound expression without context.");
 }
 
 
+/**
+ * No really, I don't know why I have to keep harping on this.
+ */
 double Compound::get_data() const {
 	throw std::logic_error
 		("Attempt to get data from compound expression without context.");

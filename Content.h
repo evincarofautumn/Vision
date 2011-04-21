@@ -4,6 +4,9 @@
 #include <string>
 
 
+/**
+ * A string Value.
+ */
 class Content : public Value {
 public:
 

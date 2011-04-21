@@ -5,6 +5,9 @@
 #include <vector>
 
 
+/**
+ * A block of unevaluated Expressions.
+ */
 class Block : public Expression {
 public:
 
