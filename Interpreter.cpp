@@ -18,6 +18,8 @@ void Interpreter::run() {
 
 	std::shared_ptr<const Expression> expression = parser.run();
 	auto result = expression->evaluate(context);
-	stream << context.head_buffer.str() << '\n' << result->get_content();
+	stream << context.head_buffer.str() << '\n';
+ 	if (!context.head_mode)
+		stream << result->get_content();
 
 }

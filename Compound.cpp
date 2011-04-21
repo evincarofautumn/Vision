@@ -183,36 +183,29 @@ std::shared_ptr<const List> Compound::evaluate(Context& context) const {
 
 	try {
 
-		if (context.head_mode ? id == "header" : true) {
+		auto evaluator = evaluators.find(id);
 
-			auto evaluator = evaluators.find(id);
+		if (evaluator != evaluators.end())
+			return (this->*evaluator->second)(id, context);
 
-			if (evaluator != evaluators.end())
-				return (this->*evaluator->second)(id, context);
+		std::vector<std::vector<double>> data_parameters;
+		std::vector<std::vector<std::string>> content_parameters;
 
-			std::vector<std::vector<double>> data_parameters;
-			std::vector<std::vector<std::string>> content_parameters;
-
-			for (auto i = data.begin(); i != data.end(); ++i) {
-				List flattener(line_number, column_number);
-				for (auto j = i->begin(); j != i->end(); ++j)
-					flattener.add((*j)->evaluate(context));
-				data_parameters.push_back(flattener.flat_data());
-			}
-
-			for (auto i = content.begin(); i != content.end(); ++i) {
-				List flattener(line_number, column_number);
-				for (auto j = i->begin(); j != i->end(); ++j)
-					flattener.add((*j)->evaluate(context));
-				content_parameters.push_back(flattener.flat_content());
-			}
-
-			return context.evaluate(id, data_parameters, content_parameters);
-
+		for (auto i = data.begin(); i != data.end(); ++i) {
+			List flattener(line_number, column_number);
+			for (auto j = i->begin(); j != i->end(); ++j)
+				flattener.add((*j)->evaluate(context));
+			data_parameters.push_back(flattener.flat_data());
 		}
 
-		return std::shared_ptr<const List>
-			(new List(line_number, column_number));
+		for (auto i = content.begin(); i != content.end(); ++i) {
+			List flattener(line_number, column_number);
+			for (auto j = i->begin(); j != i->end(); ++j)
+				flattener.add((*j)->evaluate(context));
+			content_parameters.push_back(flattener.flat_content());
+		}
+
+		return context.evaluate(id, data_parameters, content_parameters);
 
 	} catch (const std::runtime_error& exception) {
 
