@@ -4,19 +4,21 @@
 #include <list>
 
 
+class Context;
+
+
 /**
  * Produces a list of Tokens from an input stream with an assumed tab width.
  */
 class Scanner {
 public:
 
-	Scanner(std::istream&, int);
-	std::list<Token> run() const;
+	Scanner(std::istream&);
+	std::list<Token> run(const Context&) const;
 
 private:
 
 	std::istream& stream;
-	const int tab_size;
 
 };
 

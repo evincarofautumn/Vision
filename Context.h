@@ -25,6 +25,7 @@ public:
 
 	void enter_scope(const std::string& = "");
 	void exit_scope();
+	void inject(const Context&);
 	void use(const std::string&);
 
 	std::shared_ptr<const List> evaluate(const std::string&,
@@ -34,8 +35,10 @@ public:
 		std::vector<std::vector<std::string>>());
 
 	bool head_mode;
-	bool silent_mode;
+	bool indent_mode;
 	bool pedantic_mode;
+	bool silent_mode;
+	int tab_size;
 	std::ostringstream head_buffer;
 
 private:

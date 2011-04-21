@@ -263,6 +263,12 @@ void Vision::decode_variables(const std::string& raw) {
  */
 void Vision::define_input(Context& context) const {
 
+	context.head_mode = head_mode;
+	context.indent_mode = indent_mode;
+	context.pedantic_mode = pedantic_mode;
+	context.silent_mode = silent_mode;
+	context.tab_size = tab_size;
+
 	auto request_method = cgi.find("REQUEST_METHOD");
 	context.enter_scope(request_method->second);
 	for (auto i = input.begin(); i != input.end(); ++i)
@@ -289,24 +295,18 @@ void Vision::run() const try {
 
 	if (filename == "-") {
 
-		const Scanner scanner(std::cin, tab_size);
-		const Parser parser(scanner, indent_mode);
+		const Scanner scanner(std::cin);
+		const Parser parser(scanner);
 		Interpreter interpreter(parser, std::cout);
-		interpreter.context.head_mode = head_mode;
-		interpreter.context.silent_mode = silent_mode;
-		interpreter.context.pedantic_mode = pedantic_mode;
 		define_input(interpreter.context);
 		interpreter.run();
 
 	} else {
 
 		std::ifstream file(filename.c_str(), std::ios::binary);
-		const Scanner scanner(file, tab_size);
-		const Parser parser(scanner, indent_mode);
+		const Scanner scanner(file);
+		const Parser parser(scanner);
 		Interpreter interpreter(parser, std::cout);
-		interpreter.context.head_mode = head_mode;
-		interpreter.context.silent_mode = silent_mode;
-		interpreter.context.pedantic_mode = pedantic_mode;
 		define_input(interpreter.context);
 		interpreter.run();
 

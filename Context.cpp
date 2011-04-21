@@ -5,7 +5,7 @@
 
 
 Context::Context() : head_mode(false), silent_mode(false), pedantic_mode(false),
-	stack{Scope("global")} {}
+	tab_size(4), stack{Scope("global")} {}
 
 
 /**
@@ -68,6 +68,21 @@ void Context::enter_scope(const std::string& name) {
  */
 void Context::exit_scope() {
 	stack.pop_front();
+}
+
+
+/**
+ * Inject all definitions from an alien Context into the current Context. This
+ * is basically what makes libraries and metaprogramming at all possible. Any
+ * namespace prefixes that the alien Context has specified will be injected.
+ * Redefinition of names is left disabled, just in case.
+ */
+void Context::inject(const Context& context) {
+	for (auto i = context.stack.front().symbols.begin();
+		i != context.stack.front().symbols.end(); ++i)
+		define(i->first, i->second);
+	stack.front().use.insert
+		(context.stack.front().use.begin(), context.stack.front().use.end());
 }
 
 

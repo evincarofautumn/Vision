@@ -3,6 +3,7 @@
 #include <memory>
 
 
+class Context;
 class Expression;
 class Scanner;
 
@@ -13,13 +14,12 @@ class Scanner;
 class Parser {
 public:
 
-	Parser(const Scanner&, bool);
-	std::shared_ptr<const Expression> run() const;
+	Parser(const Scanner&);
+	std::shared_ptr<const Expression> run(const Context&) const;
 
 private:
 
 	const Scanner& scanner;
-	const bool indent_mode;
 
 };
 

@@ -2,6 +2,7 @@
 #include "Block.h"
 #include "Compound.h"
 #include "Content.h"
+#include "Context.h"
 #include "Data.h"
 #include "Group.h"
 #include "Identifier.h"
@@ -20,8 +21,7 @@ std::shared_ptr<const Expression> expect_expression
 	(const std::list<Token>&, std::list<Token>::const_iterator&);
 
 
-Parser::Parser(const Scanner& scanner, bool indent_mode) : scanner(scanner),
-	indent_mode(indent_mode) {}
+Parser::Parser(const Scanner& scanner) : scanner(scanner) {}
 
 
 /**
@@ -362,15 +362,15 @@ void expect_balanced(const std::list<Token>& tokens) {
  *
  * Which, as awesome as it is, it really shouldn't be.
  */
-std::shared_ptr<const Expression> Parser::run() const {
+std::shared_ptr<const Expression> Parser::run(const Context& context) const {
 
-	std::list<Token> tokens = scanner.run();
+	std::list<Token> tokens = scanner.run(context);
 	std::list<Token>::const_iterator current = tokens.begin();
 	std::shared_ptr<Block> expressions(new Block(0, 0));
 
 	expect_balanced(tokens);
 
-	if (indent_mode) {
+	if (context.indent_mode) {
 		for (auto i = tokens.begin(); i != tokens.end(); ++i) {
 			if (i->type == Token::INDENT)
 				i->type = Token::LEFT_BRACE;

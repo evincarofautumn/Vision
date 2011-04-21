@@ -1,12 +1,12 @@
 #include "Scanner.h"
+#include "Context.h"
 #include <cstdint>
 #include <sstream>
 #include <vector>
 #include <utf8.h>
 
 
-Scanner::Scanner(std::istream& stream, int tab_size) : stream(stream),
-	tab_size(tab_size) {}
+Scanner::Scanner(std::istream& stream) : stream(stream) {}
 
 
 /**
@@ -15,7 +15,7 @@ Scanner::Scanner(std::istream& stream, int tab_size) : stream(stream),
  * and jump around between states accordingly. Everything that can go wrong
  * probably has an associated error message that's reasonably easy to read.
  */
-std::list<Token> Scanner::run() const {
+std::list<Token> Scanner::run(const Context& context) const {
 
 	std::list<Token> result;
 	int file_line = 1;
@@ -69,8 +69,9 @@ std::list<Token> Scanner::run() const {
 						indent = 0;
 						++file_line;
 					} else if (current == '\t') {
-						file_column += tab_size - file_column % tab_size;
-						if (in_indent) indent += tab_size;
+						file_column += context.tab_size -
+							file_column % context.tab_size;
+						if (in_indent) indent += context.tab_size;
 					} else if (std::isspace(current)) {
 						++file_column;
 						if (in_indent) ++indent;

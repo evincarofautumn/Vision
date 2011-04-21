@@ -4,7 +4,10 @@
 #include "Context.h"
 #include "Data.h"
 #include "Identifier.h"
+#include "Interpreter.h"
 #include "List.h"
+#include "Parser.h"
+#include "Scanner.h"
 #include <cmath>
 #include <cstdio>
 #include <fstream>
@@ -566,12 +569,40 @@ std::shared_ptr<const List> Compound::evaluate_namespace
 
 
 /**
- * Import a module. TODO: anything.
+ * Import a module.
  */
 std::shared_ptr<const List> Compound::evaluate_use
 	(const std::string& id, Context& context) const {
 
-	return std::shared_ptr<const List>(new List(line_number, column_number));
+	std::string name;
+	if (content.size() == 1 && identifier.empty() && data.empty())
+		name = Block(line_number, column_number, content[0]).evaluate
+			(context)->get_content();
+	else if (!identifier.empty() && content.empty() && data.empty())
+		name = identifier;
+	else
+		throw std::runtime_error("Invalid use of \"use\".");
+
+	std::ifstream file(name.c_str());
+
+	if (!file.is_open()) {
+		std::ostringstream message;
+		message << "Unable to find library \"" << name << "\".";
+		throw std::runtime_error(message.str());
+	}
+
+	std::ostringstream output;
+	const Scanner scanner(file);
+	const Parser parser(scanner);
+	Interpreter interpreter(parser, output);
+	interpreter.run();
+	context.inject(interpreter.context);
+	context.head_buffer << interpreter.context.head_buffer.str();
+
+	std::shared_ptr<List> result(new List(line_number, column_number));
+	result->add(std::shared_ptr<const Value>(new Content
+		(line_number, column_number, output.str())));
+	return std::static_pointer_cast<const List>(result);
 
 }
 
